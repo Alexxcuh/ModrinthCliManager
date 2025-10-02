@@ -45,7 +45,6 @@ def replacemods(moddir):
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
 def fetchmods(ver=None,load=None,path=None):
     defau = versions["result"][0]
-    print("dihh")
     if not ver:
         while True:
             version = input(f"Minecraft version (default {defau}): ").strip()
