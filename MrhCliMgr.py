@@ -131,7 +131,6 @@ def searchmod(search, limit=15):
             {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
             """)
 def main():
-    print(sys.argv)
     match sys.argv[1:]:
         case ["-S", search, *rest] | ["--search", search, *rest]:
             limit = rest[0] if len(rest) > 0 else 15
