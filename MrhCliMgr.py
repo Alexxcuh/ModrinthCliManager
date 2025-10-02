@@ -3,6 +3,7 @@ import requests
 import platform
 from pathlib import Path
 import urllib.request
+import sys
 versions = requests.get("https://mc-versions-api.net/api/java").json()
 print(r"""
 ░███     ░███                   ░██          ░██              ░██    ░██          ░██████  ░██ ░██░███     ░███                                                                 
@@ -13,38 +14,15 @@ print(r"""
 ░██       ░██ ░██    ░██ ░██   ░███ ░██      ░██░██    ░██    ░██    ░██    ░██  ░██   ░██ ░██ ░██░██       ░██ ░██   ░██  ░██    ░██ ░██   ░██  ░██   ░███ ░██        ░██      
 ░██       ░██  ░███████   ░█████░██ ░██      ░██░██    ░██     ░████ ░██    ░██   ░██████  ░██ ░██░██       ░██  ░█████░██ ░██    ░██  ░█████░██  ░█████░██  ░███████  ░██      
                                                                                                                                                         ░██                     
-                                                                                                                                                  ░███████                      
-By Alexx
+                                                                                                                                                ░███████                      
+By AlexXD_ (Alexxcuh)
 """)
-defau = versions["result"][0]
-while True:
-    version = input(f"Minecraft version (default {defau}): ").strip()
-    if not version:
-        version = defau
-        break
-    if version in versions["result"]: break
-    print("❌ Invalid version, try again.")
-loader = input("minecraft loader (default fabric): ")
-if not loader: loader = "fabric"
-defidir = ""
-match platform.system():
-    case "Linux": # any linux distribution
-        defdir = f"{os.path.expanduser('~/.minecraft/mods')}"
-    case "Windows": # windows
-        defdir = f"{os.getenv('APPDATA')}/.minecraft/mods"
-    case "Darwin": # macOS
-        defdir = f"{os.path.expanduser('~/Library/Application Support/minecraft/mods')}"
-    case _:
-        defdir = "couldn't recognise the OS you are running, please enter it manually."
-        print("gng what fucking os are u running 😭😭😭")
-moddir = input(f"minecraft mods directory (default {defdir}): ")
-if not moddir: moddir = defdir
-
 path = os.path.realpath(os.getcwd())
 modstofetch = Path(f"{path}/mods.txt")
 mods = []
 
-def getmod(name):
+# -U // --update
+def getmod(name,version,loader):
     response = requests.get(f"https://api.modrinth.com/v2/project/{name}/version")
     if response.status_code == 404: return 1
 
@@ -54,7 +32,7 @@ def getmod(name):
             print(f"Got download URL for {v["name"]} ({name}) ✅")
             return v["files"][0]["url"]
     return 0
-def replacemods():
+def replacemods(moddir):
     for mod in os.listdir(moddir):
         if not mod.endswith(".jar"): continue
         os.remove(f"{moddir}/{mod}")
@@ -65,8 +43,44 @@ def replacemods():
         urllib.request.urlretrieve(url, filepath)
         print(f"Downloaded {filename} ✅")
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
-def fetchmods():
-
+def fetchmods(ver,load,path):
+    defau = versions["result"][0]
+    if not ver:
+        while True:
+            version = input(f"Minecraft version (default {defau}): ").strip()
+            if not version:
+                version = defau
+                break
+            if version in versions["result"]: break
+            print("❌ Invalid version, try again.")
+    else: 
+        version = ver
+        if version not in versions["result"]:
+            print("❌ Invalid version.")
+            return
+    if not load:
+        loader = input("minecraft loader (default fabric): ")
+        if not loader: loader = "fabric"
+    else: loader = load
+    if not path:
+        defidir = ""
+        match platform.system():
+            case "Linux": # any linux distribution
+                defdir = f"{os.path.expanduser('~/.minecraft/mods')}"
+            case "Windows": # windows
+                defdir = f"{os.getenv('APPDATA')}/.minecraft/mods"
+            case "Darwin": # macOS
+                defdir = f"{os.path.expanduser('~/Library/Application Support/minecraft/mods')}"
+            case _:
+                defdir = "couldn't recognise the OS you are running, please enter it manually."
+                print("gng what fucking os are u running 😭😭😭")
+        moddir = input(f"minecraft mods directory (default {defdir}): ")
+        if not moddir: moddir = defdir
+    else:
+        if platform.system() != "Windows":
+            moddir = os.path.expanduser(path)
+        else:
+            moddir = path
     if not modstofetch.exists():
         with open(modstofetch, "a") as f:
             f.write("## Put project-id(s) in here\n")
@@ -76,7 +90,7 @@ def fetchmods():
     with open(modstofetch) as f:
         for line in f.read().splitlines():
             if line.startswith("##"): continue
-            uri = getmod(line)
+            uri = getmod(line,version,loader)
             if uri == 0: 
                 print(f"💔 mod {line} was not found for version {version} 💔") 
                 continue
@@ -86,9 +100,48 @@ def fetchmods():
             mods.append(uri)
         f.close()
     print("Replacing...")
-    replacemods()
+    replacemods(moddir)
+# -H
+def helpusage():
+    print(r"""
+        -S , --search : search for a mod on modrinth (args: search, limit(15 default) ).
+        -U , --update : updates the script .
+        -I , --install : deletes all mods from the mods folder and installs the latest mods from mods.txt for the version given ( args: version, loader, path ) .
+        -H , --help : shows the help screen ( the screen you're currently on ) .
+    """)
+    return
+# -U
+def updatescript():
+    print("Updating script...")
+    urllib.request.urlretrieve("https://raw.githubusercontent.com/Alexxcuh/ModrinthCliManager/refs/heads/master/MrhCliMgr.py", __file__)
+    print("Script updated! 😄")
+    return
+# -S
+def searchmod(search, limit=15):
+    if not search:
+        print("Gang.. enter a mod to search for 😭")
+        return
+    query = requests.get(f"https://api.modrinth.com/v2/search?query={search}&limit={limit}").json()
+    for modinfo in query["hits"]:
+        print(f"""            Title: {modinfo["title"]}
+            Project-ID: {modinfo["slug"]}
+            Author: {modinfo["author"]}
+            Description: "{modinfo["description"]}"
+            {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
+            """)
 def main():
-    fetchmods()
+    match sys.argv[1:]:
+        case ["-S", search, limit, *rest] | ["--search", search, limit, *rest]:
+            searchmod(search, limit)
+        case ["-U", *rest] | ["--update", *rest]:
+            updatescript()
+        case ["-I", ver, load, path, *rest] | ["--install", ver, load, path, *rest]:
+            fetchmods(ver,load,path)
+        case ["-H", *rest] | ["--help", *rest]:
+            helpusage()
+        case []:
+            helpusage()
+    return
 
 if __name__ == "__main__":
     main()
