@@ -43,8 +43,9 @@ def replacemods(moddir):
         urllib.request.urlretrieve(url, filepath)
         print(f"Downloaded {filename} ✅")
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
-def fetchmods(ver,load,path):
+def fetchmods(ver=None,load=None,path=None):
     defau = versions["result"][0]
+    print("dihh")
     if not ver:
         while True:
             version = input(f"Minecraft version (default {defau}): ").strip()
@@ -130,13 +131,18 @@ def searchmod(search, limit=15):
             {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
             """)
 def main():
+    print(sys.argv)
     match sys.argv[1:]:
-        case ["-S", search, limit, *rest] | ["--search", search, limit, *rest]:
+        case ["-S", search, *rest] | ["--search", search, *rest]:
+            limit = rest[0] if len(rest) > 0 else 15
             searchmod(search, limit)
         case ["-U", *rest] | ["--update", *rest]:
             updatescript()
-        case ["-I", ver, load, path, *rest] | ["--install", ver, load, path, *rest]:
-            fetchmods(ver,load,path)
+        case ["-I", *rest] | ["--install", *rest]:
+            ver = rest[0] if len(rest) > 0 else None
+            load = rest[1] if len(rest) > 1 else None
+            path = rest[2] if len(rest) > 2 else None
+            fetchmods(ver, load, path)
         case ["-H", *rest] | ["--help", *rest]:
             helpusage()
         case []:
