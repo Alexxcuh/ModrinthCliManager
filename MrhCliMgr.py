@@ -1,7 +1,6 @@
 import os
 import requests
 import platform
-from pathlib import Path
 import urllib.request
 import sys
 import yaml
@@ -102,7 +101,7 @@ def fetchmods(ver=None,load=None,path=None):
 def helpusage():
     print(r"""        -S , --search : search for a mod on modrinth ( args: query, limit(15 default) ).
         -U , --update : updates the script .
-        -I , --install : deletes all mods from the mods folder and installs the latest mods from the mods paramater in settings.yaml for the version given ( args: version, loader, path ) .
+        -I , --install : deletes all mods from the mods folder and installs the latest mods from the mods listed in settings.yaml for the version given ( args: version, loader, path ) .
         -H , --help : shows the help screen ( the screen you're currently on ) .
     """)
     return
