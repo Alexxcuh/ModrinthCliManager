@@ -83,7 +83,7 @@ def replacemods(moddir):
             mods = [url for url in mods if os.path.basename(url).replace("%2B", "+") != mod]
             print(f"{mod} already is the latest version/upgraded 🐟")
         else:
-            os.remove(os.path.join(moddir, mod))
+            os.remove(f"{moddir}/{mod}")
     print("Deleted previous mods")
     for url in mods:
         filename = os.path.basename(url).replace("%2B","+")
