@@ -5,6 +5,7 @@ import urllib.request
 import sys
 import yaml
 import io
+scriptversion = "1.0.0"
 settings = {
     "version": None,
     "loader": "fabric",
@@ -14,7 +15,7 @@ settings = {
     ]
 }
 versions = requests.get("https://mc-versions-api.net/api/java").json()
-print(r"""
+print(rf"""
 ░███     ░███                   ░██          ░██              ░██    ░██          ░██████  ░██ ░██░███     ░███                                                                 
 ░████   ░████                   ░██                           ░██    ░██         ░██   ░██ ░██    ░████   ░████                                                                 
 ░██░██ ░██░██  ░███████   ░████████ ░██░████ ░██░████████  ░████████ ░████████  ░██        ░██ ░██░██░██ ░██░██  ░██████   ░████████   ░██████    ░████████  ░███████  ░██░████ 
@@ -24,7 +25,7 @@ print(r"""
 ░██       ░██  ░███████   ░█████░██ ░██      ░██░██    ░██     ░████ ░██    ░██   ░██████  ░██ ░██░██       ░██  ░█████░██ ░██    ░██  ░█████░██  ░█████░██  ░███████  ░██      
                                                                                                                                                         ░██                     
                                                                                                                                                 ░███████                      
-By AlexXD_ (Alexxcuh)
+By AlexXD_ (Alexxcuh) - Version: {scriptversion}
 """)
 path = os.path.realpath(os.getcwd())
 modstofetch = []
