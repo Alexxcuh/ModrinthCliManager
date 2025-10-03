@@ -126,6 +126,7 @@ def fetchmods(ver=None,load=None,path=None):
         return
     print("Getting dependencies for mods...")
     getdependencies()
+    print("Fetching mod links...")
     for line in modstofetch:
         uri = getmod(line,version,loader)
         if uri == 0: 
@@ -135,7 +136,7 @@ def fetchmods(ver=None,load=None,path=None):
             print(f"💔 mod {line} doesn't exist, make sure you typed/copied it correctly 💔") 
             continue
         mods.append(uri)
-    print("Replacing...")
+    print("Replacing old mods...")
     replacemods(moddir)
 # -H
 def helpusage():
