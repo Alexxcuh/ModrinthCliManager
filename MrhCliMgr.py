@@ -74,9 +74,16 @@ def getmod(name,version,loader):
             return v["files"][0]["url"]
     return 0
 def replacemods(moddir):
+    global mods
+    mod_filenames = {os.path.basename(url).replace("%2B", "+") for url in mods}
+    print("Checking for up-to-date mods..")
     for mod in os.listdir(moddir):
         if not mod.endswith(".jar"): continue
-        os.remove(f"{moddir}/{mod}")
+        if mod in mod_filenames:
+            mods = [url for url in mods if os.path.basename(url).replace("%2B", "+") != mod]
+            print(f"{mod} already is the latest version/upgraded 🐟")
+        else:
+            os.remove(os.path.join(moddir, mod))
     print("Deleted previous mods")
     for url in mods:
         filename = os.path.basename(url).replace("%2B","+")
