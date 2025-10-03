@@ -170,7 +170,7 @@ def searchmod(search, limit=15):
 def main():
     if not initializesettings(): return
     match sys.argv[1:]:
-        case ["-S", search] | ["--search", search]:
+        case ["-S", search, *rest] | ["--search", search, *rest]:
             limit = rest[0] if len(rest) > 0 else 15
             searchmod(search, limit)
         case ["-U"] | ["--update"]:
