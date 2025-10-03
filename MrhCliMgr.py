@@ -124,7 +124,7 @@ def fetchmods(ver=None,load=None,path=None):
     if version not in versions["result"]:
         print("the version given in the yaml file is invalid ❌")
         return
-    print("Getting dependencies for mods...")
+    print("Getting dependencies for mods... (this may take a while)")
     getdependencies()
     print("Fetching mod links...")
     for line in modstofetch:
