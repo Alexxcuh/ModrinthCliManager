@@ -87,8 +87,6 @@ def getdependencies():
                     for dv in dep_vers:
                         if version in dv["game_versions"] and loader in dv["loaders"]:
                             filename = os.path.basename(dv["files"][0]["url"]).replace("%2B","+")
-                            if filename in os.listdir(moddir):
-                                break
                             print(f"Dependency {filename} added to be downloaded for {mod} 🤗")
                             modstofetch.append(project_slug)
                             break
