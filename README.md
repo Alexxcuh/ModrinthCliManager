@@ -1,6 +1,6 @@
 # Modrinth Cli Mod Manager
 ## !!! NOTICE !!!
-**Upon usage the script will delete all .jar files in the mods directory and then replace them with the mods in the mods.txt file, it's not recursive, thus you can put a mod you dont want it to delete in a subfolder in the mods folder.**
+**Upon usage the script will delete all .jar files in the mods directory and then replace them with the mods in the settings.yaml file, it's not recursive, thus you can put a mod you dont want it to delete in a subfolder in the mods folder.**
 
 Also, don't confuse the mod name with the project id, they are 2 separate things, for example, ``https://modrinth.com/mod/gamma-utils``, the mod name is ``Gamma Utils (Fullbright)``, and the project id is ``gamma-utils``, don't confuse one another or the script won't work correctly.  
 ## Usage
@@ -14,6 +14,14 @@ you put into the mods.txt file the project ids of the modrinth mods, you can fin
 
 ``mod directory``: the default mod directory it chooses is the default mod dir of your operating system, if you're not using **Linux**, **Windows** or **MacOS** you'll have to input the mod directory manually. (optional)
 
+**Note**: the default paramaters for --install can be changed in settings.yaml
+```yaml
+loader: fabric
+mods:
+- Put your mods in here
+path: /home/user/.minecraft/mods
+version: 1.21.8
+```
 ## -H , --help
 shows the help screen where you can see this in a short form.
 ## -U , --update

@@ -4,6 +4,16 @@ import platform
 from pathlib import Path
 import urllib.request
 import sys
+import yaml
+import io
+settings = {
+    "version": None,
+    "loader": "fabric",
+    "path": None,
+    "mods": [
+        "Put your mods in here"
+    ]
+}
 versions = requests.get("https://mc-versions-api.net/api/java").json()
 print(r"""
 ░███     ░███                   ░██          ░██              ░██    ░██          ░██████  ░██ ░██░███     ░███                                                                 
@@ -18,9 +28,41 @@ print(r"""
 By AlexXD_ (Alexxcuh)
 """)
 path = os.path.realpath(os.getcwd())
-modstofetch = Path(f"{path}/mods.txt")
+modstofetch = []
 mods = []
-
+moddir = None
+version = None
+loader = None
+def initializesettings():
+    global moddir,version,loader,settings,modstofetch
+    if os.path.exists(f"{path}/settings.yaml"):
+        with open(f"{path}/settings.yaml", 'r') as stream:
+            settings = {}
+            settings = yaml.safe_load(stream)
+    else:
+        print(settings)
+        settings["version"] = versions["result"][0]
+        settings["loader"] = "fabric"
+        match platform.system():
+            case "Linux":
+                settings["path"] = f"{os.path.expanduser('~/.minecraft/mods')}"
+            case "Windows":
+                settings["path"] = f"{os.getenv('APPDATA')}/.minecraft/mods"
+            case "Darwin":
+                settings["path"] = f"{os.path.expanduser('~/Library/Application Support/minecraft/mods')}"
+        with io.open(f"{path}/settings.yaml", 'w', encoding='utf8') as outfile:
+            yaml.dump(settings, outfile, default_flow_style=False, allow_unicode=True)
+        print("settings.yaml file was created, enter the version, loader, mod directory path and mods the script will use")
+        return False
+    if platform.system() != "Windows":
+        moddir = os.path.expanduser(settings.get("path"))
+    else:
+        moddir = settings["path"]
+    version = settings["version"]
+    loader = settings["loader"]
+    modstofetch = settings["mods"]
+    return True
+    
 # -U // --update
 def getmod(name,version,loader):
     response = requests.get(f"https://api.modrinth.com/v2/project/{name}/version")
@@ -38,75 +80,29 @@ def replacemods(moddir):
         os.remove(f"{moddir}/{mod}")
     print("Deleted previous mods")
     for url in mods:
-        filename = os.path.basename(url)
+        filename = os.path.basename(url).replace("%2B","+")
         filepath = os.path.join(moddir, filename)
         urllib.request.urlretrieve(url, filepath)
         print(f"Downloaded {filename} ✅")
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
 def fetchmods(ver=None,load=None,path=None):
-    defau = versions["result"][0]
-    if not ver:
-        while True:
-            version = input(f"Minecraft version (default {defau}): ").strip()
-            if not version:
-                version = defau
-                break
-            if version in versions["result"]: break
-            print("❌ Invalid version, try again.")
-    else: 
-        version = ver
-        if version not in versions["result"]:
-            print("❌ Invalid version.")
-            return
-    if not load:
-        loader = input("minecraft loader (default fabric): ")
-        if not loader: loader = "fabric"
-    else: loader = load
-    if not path:
-        defidir = ""
-        match platform.system():
-            case "Linux": # any linux distribution
-                defdir = f"{os.path.expanduser('~/.minecraft/mods')}"
-            case "Windows": # windows
-                defdir = f"{os.getenv('APPDATA')}/.minecraft/mods"
-            case "Darwin": # macOS
-                defdir = f"{os.path.expanduser('~/Library/Application Support/minecraft/mods')}"
-            case _:
-                defdir = "couldn't recognise the OS you are running, please enter it manually."
-                print("gng what fucking os are u running 😭😭😭")
-        moddir = input(f"minecraft mods directory (default {defdir}): ")
-        if not moddir: moddir = defdir
-    else:
-        if platform.system() != "Windows":
-            moddir = os.path.expanduser(path)
-        else:
-            moddir = path
-    if not modstofetch.exists():
-        with open(modstofetch, "a") as f:
-            f.write("## Put project-id(s) in here\n")
-            print("mods.txt was not found, place the modrinth project-id(s) of the mods you want the script to take care of: https://modrinth.com/mod/project-id")
-            f.close()
-            return
-            
-    with open(modstofetch) as f:
-        for line in f.read().splitlines():
-            if line.startswith("##"): continue
-            uri = getmod(line,version,loader)
-            if uri == 0: 
-                print(f"💔 mod {line} was not found for version {version} 💔") 
-                continue
-            elif uri == 1:
-                print(f"💔 mod {line} doesn't exist, make sure you typed/copied it correctly 💔") 
-                continue
-            mods.append(uri)
-        f.close()
+    for line in modstofetch:
+        if line.startswith("##"): continue
+        uri = getmod(line,version,loader)
+        if uri == 0: 
+            print(f"💔 mod {line} was not found for version {version} 💔") 
+            continue
+        elif uri == 1:
+            print(f"💔 mod {line} doesn't exist, make sure you typed/copied it correctly 💔") 
+            continue
+        mods.append(uri)
     print("Replacing...")
     replacemods(moddir)
 # -H
 def helpusage():
     print(r"""        -S , --search : search for a mod on modrinth ( args: query, limit(15 default) ).
         -U , --update : updates the script .
-        -I , --install : deletes all mods from the mods folder and installs the latest mods from mods.txt for the version given ( args: version, loader, path ) .
+        -I , --install : deletes all mods from the mods folder and installs the latest mods from the mods paramater in settings.yaml for the version given ( args: version, loader, path ) .
         -H , --help : shows the help screen ( the screen you're currently on ) .
     """)
     return
@@ -130,6 +126,7 @@ def searchmod(search, limit=15):
             {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
             """)
 def main():
+    if not initializesettings(): return
     match sys.argv[1:]:
         case ["-S", search, *rest] | ["--search", search, *rest]:
             limit = rest[0] if len(rest) > 0 else 15
