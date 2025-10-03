@@ -85,7 +85,7 @@ def replacemods(moddir):
         print(f"Downloaded {filename} ✅")
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
 def fetchmods(ver=None,load=None,path=None):
-    if version not in versions:
+    if version not in versions["result"]:
         print("the version given in the yaml file is invalid ❌")
         return
     for line in modstofetch:
