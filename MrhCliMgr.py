@@ -86,6 +86,7 @@ def fetchmods(ver=None,load=None,path=None):
             f.write("## Put project-id(s) in here\n")
             print("mods.txt was not found, place the modrinth project-id(s) of the mods you want the script to take care of: https://modrinth.com/mod/project-id")
             f.close()
+            return
             
     with open(modstofetch) as f:
         for line in f.read().splitlines():

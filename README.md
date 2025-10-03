@@ -1,6 +1,6 @@
 # Modrinth Cli Mod Manager
 ## !!! NOTICE !!!
-**Upon usage the script will delete all .jar files in the mods directory, it's not recursive, thus you can put a mod you dont want it to delete in a subfolder in the mods folder.**
+**Upon usage the script will delete all .jar files in the mods directory and then replace them with the mods in the mods.txt file, it's not recursive, thus you can put a mod you dont want it to delete in a subfolder in the mods folder.**
 
 Also, don't confuse the mod name with the project id, they are 2 separate things, for example, ``https://modrinth.com/mod/gamma-utils``, the mod name is ``Gamma Utils (Fullbright)``, and the project id is ``gamma-utils``, don't confuse one another or the script won't work correctly.  
 ## Usage
