@@ -63,12 +63,43 @@ def initializesettings():
     return True
     
 # -U // --update
+def getdependencies():
+    i = 0
+    while i < len(modstofetch):
+        mod = modstofetch[i]
+        response = requests.get(f"https://api.modrinth.com/v2/project/{mod}/version")
+        if response.status_code == 404:
+            i += 1
+            continue
+        vers = response.json()
+        for v in vers:
+            if version in v["game_versions"] and loader in v["loaders"]:
+                if not v["dependencies"]:
+                    continue
+                for j in v["dependencies"]:
+                    if j["dependency_type"] != "required":
+                        continue
+                    project_slug = requests.get(f"https://api.modrinth.com/v2/project/{j['project_id']}").json()["slug"]
+                    if project_slug in modstofetch:
+                        continue
+                    dep_response = requests.get(f"https://api.modrinth.com/v2/project/{project_slug}/version")
+                    dep_vers = dep_response.json()
+                    for dv in dep_vers:
+                        if version in dv["game_versions"] and loader in dv["loaders"]:
+                            filename = os.path.basename(dv["files"][0]["url"]).replace("%2B","+")
+                            if filename in os.listdir(moddir):
+                                break
+                            print(f"Dependency {filename} added to be downloaded for {mod} 🤗")
+                            modstofetch.append(project_slug)
+                            break
+        i += 1
+    with io.open(f"{path}/settings.yaml", 'w', encoding='utf8') as outfile:
+        yaml.dump(settings, outfile, default_flow_style=False, allow_unicode=True)
 def getmod(name,version,loader):
     response = requests.get(f"https://api.modrinth.com/v2/project/{name}/version")
     if response.status_code == 404: return 1
-
-    versions = response.json()
-    for v in versions:
+    vers = response.json()
+    for v in vers:
         if version in v["game_versions"] and loader in v["loaders"]:
             print(f"Got download URL for {v["name"]} ({name}) ✅")
             return v["files"][0]["url"]
@@ -95,8 +126,9 @@ def fetchmods(ver=None,load=None,path=None):
     if version not in versions["result"]:
         print("the version given in the yaml file is invalid ❌")
         return
+    print("Getting dependencies for mods...")
+    getdependencies()
     for line in modstofetch:
-        if line.startswith("##"): continue
         uri = getmod(line,version,loader)
         if uri == 0: 
             print(f"💔 mod {line} was not found for version {version} 💔") 
@@ -109,10 +141,10 @@ def fetchmods(ver=None,load=None,path=None):
     replacemods(moddir)
 # -H
 def helpusage():
-    print(r"""        -S , --search : search for a mod on modrinth ( args: query, limit(15 default) ).
-        -U , --update : updates the script .
-        -I , --install : deletes all mods from the mods folder and installs the latest mods from the mods listed in settings.yaml for the version given ( args: version, loader, path ) .
-        -H , --help : shows the help screen ( the screen you're currently on ) .
+    print(r"""        -S, --search [query] [limit] : search for a mod on modrinth.
+        -U, --update : updates the script.
+        -I, --install [version](optional) [loader](optional) [path](optional) : deletes all mods from the mods folder and installs the latest mods from the mods listed in settings.yaml for the version given.
+        -H, --help : shows the help screen.
     """)
     return
 # -U
@@ -137,19 +169,17 @@ def searchmod(search, limit=15):
 def main():
     if not initializesettings(): return
     match sys.argv[1:]:
-        case ["-S", search, *rest] | ["--search", search, *rest]:
+        case ["-S", search] | ["--search", search]:
             limit = rest[0] if len(rest) > 0 else 15
             searchmod(search, limit)
-        case ["-U", *rest] | ["--update", *rest]:
+        case ["-U"] | ["--update"]:
             updatescript()
         case ["-I", *rest] | ["--install", *rest]:
             ver = rest[0] if len(rest) > 0 else None
             load = rest[1] if len(rest) > 1 else None
             path = rest[2] if len(rest) > 2 else None
             fetchmods(ver, load, path)
-        case ["-H", *rest] | ["--help", *rest]:
-            helpusage()
-        case []:
+        case ["-H"] | ["--help"] | []:
             helpusage()
     return
 

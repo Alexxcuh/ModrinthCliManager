@@ -43,5 +43,6 @@ updates the script to the latest version of the script there is.
 ``query``: the mod you want to search on modrinth, this is a required paramater.
 
 ``limit``: how many mods it can show at once, the default chosen is 15. (optional)
-## Keep in mind
-**All of the paramaters listed can be changed at startup when the script will ask for the values of the paramaters. *(of course if it isn't given the values it will go for the default ones listed previously)***                                                                                
+
+## Keep in Mind
+If there's a feature that's missing and you consider important or someting about the script bothers you, feel free to change it and contribute to the project :D
