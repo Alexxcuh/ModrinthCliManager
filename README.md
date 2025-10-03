@@ -17,6 +17,7 @@ shows the help screen where you can see this in a short form.
 updates the script to the latest version of the script there is.
 ## -S , --search
 ``query``: the mod you want to search on modrinth, this is a required paramater.
+
 ``limit``: how many mods it can show at once, the default chosen is 15. (optional)
 ## !!! NOTICE !!!
 **upon usage the script will delete all .jar files in the mods directory, it's not recursive, thus you can put a mod you dont want it to delete in a subfolder in the mods folder.**
