@@ -5,7 +5,8 @@ import urllib.request
 import sys
 import yaml
 import io
-scriptversion = "1.0.0"
+import re
+scriptversion = "1.0.1"
 settings = {
     "version": None,
     "loader": "fabric",
@@ -14,7 +15,30 @@ settings = {
         "Put your mods in here"
     ]
 }
-versions = requests.get("https://mc-versions-api.net/api/java").json()
+def version_key(v):
+    if 'w' in v:
+        m = re.match(r'(\d+)w(\d+)([a-z]?)', v)
+        if m:
+            year, week, letter = m.groups()
+            return (int(year) + 2000, int(week), ord(letter) if letter else 0)
+    parts = re.split(r'[.-]', v.replace('pre', '-').replace('rc', '-'))
+    nums = []
+    for p in parts:
+        try:
+            nums.append(int(p))
+        except ValueError:
+            pass
+    return tuple(nums)
+def getversions():
+    returntype = {"result":[]}
+    versions = requests.get("https://api.modrinth.com/v2/project/fabric-api/version").json()
+    for i in versions:
+        if i["version_type"] == "release" and i["game_versions"][0] not in returntype["result"]:
+            returntype["result"].append(i["game_versions"][0])
+    returntype["result"].sort(key=version_key, reverse=True)
+    return returntype
+versions = getversions()
+print(versions)
 print(rf"""
 ░███     ░███                   ░██          ░██              ░██    ░██          ░██████  ░██ ░██░███     ░███                                                                 
 ░████   ░████                   ░██                           ░██    ░██         ░██   ░██ ░██    ░████   ░████                                                                 
