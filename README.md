@@ -47,13 +47,13 @@ updates the script to the latest version of the script there is.
 ## Keep in Mind
 If there's a feature that's missing and you consider important or someting about the script bothers you, feel free to change it and contribute to the project :D
 
-## SETTINGS
+# SETTINGS
 
-# scan_dependencies - boolean: true
+### scan_dependencies - boolean: true
 all this does is if left on will continue checking for dependencies everytime when installing mods, very useful when you don't check the dependencies for mods but can be annoying when you are just updating your mods, thus the setting. - normally left true.
-# delete_old_mods - boolean: true
+### delete_old_mods - boolean: true
 enables or disables the functionality of the script deleting every .jar file from the mods folder when installing mods, really useful if you have some mods in there that you dont want to reinstall or that modrinth doesn't have and you'd want to use this for modrinth and something else for curseforge. - normally left true.
-# title_enabled - boolean: true
+### title_enabled - boolean: true
 enables or disables the annoying splash text of the script, the ModrinthCliManager splash text, to be more exact, the big title can be very annoying at times, thus the setting. - normally left true.
 
-# More settings coming soon
+### More settings coming soon
