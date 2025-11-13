@@ -5,7 +5,7 @@ import urllib.request
 import sys
 import yaml
 import io
-scriptversion = "1.0.1"
+scriptversion = "1.0.2"
 settingsdefaults = """version: None
 loader: "fabric"
 path: None
@@ -186,7 +186,7 @@ def searchmod(search, limit=15):
             {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
             """)
 def main():
-    if not initializesettings: return
+    if not initializesettings(): return
     match sys.argv[1:]:
         case ["-S", search, *rest] | ["--search", search, *rest]:
             limit = rest[0] if len(rest) > 0 else 15
