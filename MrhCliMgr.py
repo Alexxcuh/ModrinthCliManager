@@ -5,41 +5,33 @@ import urllib.request
 import sys
 import yaml
 import io
-import re
 scriptversion = "1.0.1"
-settings = {
-    "version": None,
-    "loader": "fabric",
-    "path": None,
-    "mods": [
-        "Put your mods in here"
-    ]
-}
-def version_key(v):
-    if 'w' in v:
-        m = re.match(r'(\d+)w(\d+)([a-z]?)', v)
-        if m:
-            year, week, letter = m.groups()
-            return (int(year) + 2000, int(week), ord(letter) if letter else 0)
-    parts = re.split(r'[.-]', v.replace('pre', '-').replace('rc', '-'))
-    nums = []
-    for p in parts:
-        try:
-            nums.append(int(p))
-        except ValueError:
-            pass
-    return tuple(nums)
+settingsdefaults = """version: None
+loader: "fabric"
+path: None
+mods:
+    #Put your mods in here
+
+# don't change anything if you don't know what you're doing
+scan_dependencies: true # scans for the dependency of the mods when downloading them
+delete_old_mods: true # deletes every mod in the folder before installing
+title_enabled: true # leave this true don't be a meanie.."""
+path = os.path.realpath(os.getcwd())
+settings = {}
+if os.path.exists(f"{path}/settings.yaml"):
+        with open(f"{path}/settings.yaml", 'r') as stream:
+            settings = yaml.safe_load(stream)
+else:
+    settings = yaml.safe_load(settingsdefaults)
 def getversions():
     returntype = {"result":[]}
     versions = requests.get("https://api.modrinth.com/v2/project/fabric-api/version").json()
     for i in versions:
-        if i["version_type"] == "release" and i["game_versions"][0] not in returntype["result"]:
+        if i["game_versions"][0] not in returntype["result"]:
             returntype["result"].append(i["game_versions"][0])
-    returntype["result"].sort(key=version_key, reverse=True)
     return returntype
-versions = getversions()
-print(versions)
-print(rf"""
+versions = {}
+if settings["title_enabled"] == True: print(rf"""
 ░███     ░███                   ░██          ░██              ░██    ░██          ░██████  ░██ ░██░███     ░███                                                                 
 ░████   ░████                   ░██                           ░██    ░██         ░██   ░██ ░██    ░████   ░████                                                                 
 ░██░██ ░██░██  ░███████   ░████████ ░██░████ ░██░████████  ░████████ ░████████  ░██        ░██ ░██░██░██ ░██░██  ░██████   ░████████   ░██████    ░████████  ░███████  ░██░████ 
@@ -51,7 +43,7 @@ print(rf"""
                                                                                                                                                 ░███████                      
 By AlexXD_ (Alexxcuh) - Version: {scriptversion}
 """)
-path = os.path.realpath(os.getcwd())
+else: print("")
 modstofetch = []
 mods = []
 moddir = None
@@ -64,7 +56,7 @@ def initializesettings():
             settings = {}
             settings = yaml.safe_load(stream)
     else:
-        print(settings)
+        versions = getversions()
         settings["version"] = versions["result"][0]
         settings["loader"] = "fabric"
         match platform.system():
@@ -75,7 +67,7 @@ def initializesettings():
             case "Darwin":
                 settings["path"] = f"{os.path.expanduser('~/Library/Application Support/minecraft/mods')}"
         with io.open(f"{path}/settings.yaml", 'w', encoding='utf8') as outfile:
-            yaml.dump(settings, outfile, default_flow_style=False, allow_unicode=True)
+            outfile.write(settingsdefaults)
         print("settings.yaml file was created, enter the version, loader, mod directory path and mods the script will use")
         return False
     if platform.system() != "Windows":
@@ -138,8 +130,8 @@ def replacemods(moddir):
             mods = [url for url in mods if os.path.basename(url).replace("%2B", "+") != mod]
             print(f"{mod} already is the latest version/upgraded 🐟")
         else:
-            os.remove(f"{moddir}/{mod}")
-    if b != len(os.listdir(moddir)): print("Deleted previous mods")
+            if settings["delete_old_mods"] == True: os.remove(f"{moddir}/{mod}")
+    if b != len(os.listdir(moddir)) and settings["delete_old_mods"] == True: print("Deleted previous mods")
     for url in mods:
         filename = os.path.basename(url).replace("%2B","+")
         filepath = os.path.join(moddir, filename)
@@ -147,11 +139,13 @@ def replacemods(moddir):
         print(f"Downloaded {filename} ✅")
     print("Downgrade/Upgrade done sucessfully 😄😄😄😄😄😄😄")
 def fetchmods(ver=None,load=None,path=None):
+    versions = getversions()
     if version not in versions["result"]:
         print("the version given in the yaml file is invalid ❌")
         return
-    print("Getting dependencies for mods... (this may take a while)")
-    getdependencies()
+    if settings["scan_dependencies"] == True:
+        print("Getting dependencies for mods... (this may take a while)")
+        getdependencies()
     print("Fetching mod links...")
     for line in modstofetch:
         uri = getmod(line,version,loader)
@@ -162,7 +156,7 @@ def fetchmods(ver=None,load=None,path=None):
             print(f"💔 mod {line} doesn't exist, make sure you typed/copied it correctly 💔") 
             continue
         mods.append(uri)
-    print("Replacing old mods...")
+    if settings["delete_old_mods"] == True: print("Replacing old mods...")
     replacemods(moddir)
 # -H
 def helpusage():
@@ -192,7 +186,7 @@ def searchmod(search, limit=15):
             {modinfo["downloads"]} Downloads | {modinfo["follows"]} Follows
             """)
 def main():
-    if not initializesettings(): return
+    if not initializesettings: return
     match sys.argv[1:]:
         case ["-S", search, *rest] | ["--search", search, *rest]:
             limit = rest[0] if len(rest) > 0 else 15
