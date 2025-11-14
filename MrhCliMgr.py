@@ -5,7 +5,7 @@ import urllib.request
 import sys
 import yaml
 import io
-scriptversion = "1.0.2"
+scriptversion = "1.0.3"
 settingsdefaults = """version: None
 loader: "fabric"
 path: None
